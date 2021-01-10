@@ -236,7 +236,7 @@ Score: <span id='score'>0</span>
     }
   }
 
-function date_format (date) {
+function date_format (date, ms = false) {
   // Format a date/time for the top-ten list
   day = (date.getMonth() + 1) + '/' + (date.getDate() + 100).toString().substring(1) + '/' + date.getFullYear()
   hours = date.getHours();
@@ -249,7 +249,8 @@ function date_format (date) {
     hours -= 12;
     m = 'pm';
   }
-  time = hours + ':' + (date.getMinutes() + 100).toString().substring(1) + ':' + (date.getSeconds() + 100).toString().substring(1) + m;
+  msf = ms ? '.' + (date.getMilliseconds() + 1000).toString().substring(1) : '';
+  time = hours + ':' + (date.getMinutes() + 100).toString().substring(1) + ':' + (date.getSeconds() + 100).toString().substring(1) + msf + m;
   return day + ' ' + time
 }
 
@@ -455,7 +456,7 @@ function setSpeed (ticks) {
   // Reset or decrease the time interval between drops
 	if (ticks < 0) {
     clearInterval (window.sessionStorage.getItem('timerID'));
-		ticks = Number (window.sessionStorage.getItem('ticks')) + ticks;
+		ticks = Number (window.sessionStorage.getItem('ticks')) * .933; // .5 ^ .1, so will be twice as fast after 100 rows
   }
 	window.sessionStorage.setItem('ticks', ticks);
   window.sessionStorage.setItem('timerID', setInterval (tick, ticks));
