@@ -202,11 +202,13 @@ Score: <span id='score'>0</span>
     return ret;
   }
 
-  function checkFull (row, other_side) {
+  function checkFull (row, this_side) {
     // Check if row is full and zap it if it is
     full = true;
     for (column = 0; column < width; column++) {
-      full &= getCell (row, column) == '*';
+      cell = getCell (row, column);
+      full &= cell == '*'  ||  cell == this_side; // Latter shouldn't happen, but sometimes
+      // even when a block is known to die at the bottom, it doesn't get converted to *s
     }
     if (full) {
       for (dropRow = row - 1; dropRow >= 0; dropRow--) {
@@ -227,6 +229,7 @@ Score: <span id='score'>0</span>
       }
 
       // move blocks down
+      other_side = 1 - this_side;
       block = blockInfo[other_side];
       if (block.y < row) {
           drawBlock (block, false);
@@ -313,7 +316,10 @@ function parse_number (numstr) {
           drawBlock (block, true);
           lastrow = Math.min (height, block.y + 4)
           for (row = block.y; row < lastrow; row++) {
-            checkFull (row, 1 - side);
+            checkFull (row, side);
+          }
+          if (lastrow  <  height - 1) {
+            checkFull (height - 1, side);
           }
           newBlock.type = -1; // can't drop, so start over
         }
@@ -356,6 +362,10 @@ function parse_number (numstr) {
           document.getElementById('intro').style.display = 'inline';
         }
       }
+      return;
+    }
+    if (status == 'P') {
+      alert ("Press [space] to resume the game.")
       return;
     }
     switch (char) {
@@ -455,8 +465,8 @@ function drop(side) {
 
 function setSpeed (ticks) {
   // Reset or decrease the time interval between drops
+  clearInterval (window.sessionStorage.getItem('timerID'));
 	if (ticks < 0) {
-    clearInterval (window.sessionStorage.getItem('timerID'));
 		ticks = Number (window.sessionStorage.getItem('ticks')) * .933; // .5 ^ .1, so will be twice as fast after 100 rows
   }
 	window.sessionStorage.setItem('ticks', ticks);
